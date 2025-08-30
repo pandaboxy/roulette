@@ -1,0 +1,125 @@
+// -------------------- Data --------------------
+const ITEMS = [
+  {img:"images/bear.png",name:"Bear",weight:30,cost:15},
+  {img:"images/heart_gift.png",name:"Heart",weight:30,cost:15},
+  {img:"images/gift.png",name:"Gift",weight:20,cost:25},
+  {img:"images/rose.png",name:"Rose",weight:15,cost:25},
+  {img:"images/cake.png",name:"Cake",weight:2,cost:50},
+  {img:"images/bouquet.png",name:"Flowers",weight:2,cost:50},
+  {img:"images/rocket.png",name:"Rocket",weight:1,cost:50},
+  {img:"images/champagne.png",name:"Champagne",weight:1,cost:50},
+  {img:"images/trophy.png",name:"Cup",weight:0.3,cost:100},
+  {img:"images/ring.png",name:"Ring",weight:0.3,cost:100},
+  {img:"images/gem.png",name:"Brilliant",weight:0.3,cost:100},
+  {img:"images/star.png",name:"+2500 Balance",weight:0.1,cost:0}
+];
+
+let state={stars:100,inventory:{},spinning:false};
+
+// ✅ Fix: use same key for save/load
+if(localStorage.getItem('gameState1')){
+  state=JSON.parse(localStorage.getItem('gameState1'));
+}
+updateBalance();
+
+// -------------------- Tabs --------------------
+function showTab(tab){
+  ['roulette','inventory','prizes'].forEach(t=>
+    document.getElementById(t).style.display=(t===tab?'block':'none')
+  );
+  if(tab==='inventory') renderInventory();
+  if(tab==='prizes') renderPrizes();
+}
+
+// -------------------- Balance --------------------
+function updateBalance(){
+  document.getElementById('balance').innerText=state.stars;
+  saveState();
+}
+function saveState(){
+  localStorage.setItem('gameState1',JSON.stringify(state));
+}
+
+// -------------------- Roulette --------------------
+function weightedRandom(items){
+  const total=items.reduce((s,i)=>s+i.weight,0);
+  let r=Math.random()*total;
+  for(const item of items){ r-=item.weight; if(r<=0) return item;}
+  return items[items.length-1];
+}
+
+function spin(cost){
+  if(state.spinning) return;
+  if(state.stars<cost){alert("Not enough stars");return;}
+  const pool=cost===25? ITEMS : ITEMS.filter(i=>i.name!=="Bear"&&i.name!=="Heart");
+  const prize=weightedRandom(pool);
+
+  state.stars-=cost;
+  state.spinning=true;
+  updateBalance();
+
+  const slotImg=document.getElementById('slotImg');
+  let i=0;
+  const anim=setInterval(()=>{
+    const rand=pool[Math.floor(Math.random()*pool.length)];
+    slotImg.src=rand.img;
+    i++;
+    if(i>20){
+      clearInterval(anim);
+      slotImg.src=prize.img;
+      addToInventory(prize);
+      state.spinning=false;
+      document.getElementById('lastResult').innerText="Won: "+prize.name;
+    }
+  },120);
+}
+
+// -------------------- Inventory --------------------
+function addToInventory(item){
+  // ✅ Fix: give full 2500 stars
+  if(item.name==="+2500 Balance"){
+    state.stars+=2500;
+    updateBalance();
+    return;
+  }
+  state.inventory[item.name]=(state.inventory[item.name]||0)+1;
+  saveState();
+}
+
+function renderInventory(){
+  const container=document.getElementById('inventoryList');
+  container.innerHTML='';
+  for(const [name,count] of Object.entries(state.inventory)){
+    const item=ITEMS.find(i=>i.name===name);
+    if(!item) continue;
+    const div=document.createElement('div'); 
+    div.className='inventory-item';
+    div.innerHTML=`<span>${name} x${count}</span>
+                   <img src="${item.img}">
+                   <button class="sell" onclick="sellItem('${name}')">Sell</button>`;
+    container.appendChild(div);
+  }
+}
+
+function sellItem(name){
+  const item=ITEMS.find(i=>i.name===name);
+  if(!item) return;
+  state.stars+=item.cost;
+  state.inventory[name]-=1;
+  if(state.inventory[name]<=0) delete state.inventory[name];
+  updateBalance(); renderInventory(); saveState();
+}
+
+// -------------------- Prizes --------------------
+function renderPrizes(){
+  const grid=document.getElementById('prizesGrid');
+  grid.innerHTML='';
+  ITEMS.forEach(i=>{
+    const div=document.createElement('div');
+    div.innerHTML=`<img src="${i.img}">
+                   <div>${i.name}</div>
+                   <div>Chance: ${i.weight}%</div>
+                   <div>Cost: ${i.cost}⭐</div>`;
+    grid.appendChild(div);
+  });
+}

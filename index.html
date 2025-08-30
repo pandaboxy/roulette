@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mini Game Hub</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <button onclick="showTab('roulette')">🎰 Roulette</button>
+  <button onclick="showTab('inventory')">🎒 Inventory</button>
+  <button onclick="showTab('prizes')">🎁 Prizes</button>
+</header>
+
+<div id="content">
+  <div class="balance">Balance: <span id="balance">100</span> ⭐</div>
+
+  <!-- Roulette -->
+  <div id="roulette" style="display:none;">
+    <div class="slot"><img id="slotImg" src="images/bear.png"></div>
+    <div>
+      <button onclick="spin(25)">Spin 25⭐</button>
+      <button onclick="spin(50)">Spin 50⭐</button>
+    </div>
+    <div id="lastResult"></div>
+  </div>
+
+  <!-- Inventory -->
+  <div id="inventory" style="display:none;">
+    <div id="inventoryList"></div>
+  </div>
+
+  <!-- Prizes -->
+  <div id="prizes" style="display:none;">
+    <div class="prizes-grid" id="prizesGrid"></div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
