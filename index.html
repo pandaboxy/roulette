@@ -1,36 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <title>Mini Game Hub</title>
   <!-- Yandex.RTB -->
-<script>window.yaContextCb=window.yaContextCb||[]</script>
-<script src="https://yandex.ru/ads/system/context.js" async></script>
-<meta charset="UTF-8">
-<title>Mini Game Hub</title>
-<style>
-body {background:#0d1117;color:#fff;font-family:Arial,sans-serif;margin:0;padding:0;}
-header{display:flex;justify-content:center;margin-top:10px;}
-header button{margin:5px;padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-weight:bold;}
-#content{padding:20px;text-align:center;}
-.balance{font-size:18px;margin-bottom:15px;}
-.slot{width:140px;height:140px;border:4px solid #fff;border-radius:12px;margin:0 auto;background:#161b22;display:flex;align-items:center;justify-content:center;}
-.slot img{max-width:120px;max-height:120px;}
-.inventory-item{display:flex;justify-content:space-between;align-items:center;margin:5px 0;}
-.inventory-item img{width:50px;height:50px;}
-.prizes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;justify-items:center;}
-.prizes-grid img{width:60px;height:60px;}
-button.sell{padding:4px 8px;margin-left:5px;}
-#gameCanvas{background:#87ceeb;margin:0 auto;display:block;}
-</style>
+  <script>window.yaContextCb=window.yaContextCb||[]</script>
+  <script src="https://yandex.ru/ads/system/context.js" async></script>
+  <style>
+    body {
+      background:#0d1117;
+      color:#fff;
+      font-family:Arial,sans-serif;
+      margin:0;
+      padding:0;
+    }
+    header{display:flex;justify-content:center;margin-top:10px;}
+    header button{margin:5px;padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-weight:bold;}
+    #content{padding:20px;text-align:center;}
+    .balance{font-size:18px;margin-bottom:15px;}
+    .slot{width:140px;height:140px;border:4px solid #fff;border-radius:12px;margin:0 auto;background:#161b22;display:flex;align-items:center;justify-content:center;}
+    .slot img{max-width:120px;max-height:120px;}
+    .inventory-item{display:flex;justify-content:space-between;align-items:center;margin:5px 0;}
+    .inventory-item img{width:50px;height:50px;}
+    .prizes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;justify-items:center;}
+    .prizes-grid img{width:60px;height:60px;}
+    button.sell{padding:4px 8px;margin-left:5px;}
+    #gameCanvas{background:#87ceeb;margin:0 auto;display:block;}
+
+    /* 🔹 Loading Screen */
+    #loadingScreen {
+      position:fixed;
+      top:0;left:0;
+      width:100%;height:100%;
+      background:#0d1117;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      color:#fff;
+      font-size:20px;
+      z-index:9999;
+    }
+    .spinner {
+      border:6px solid #444;
+      border-top:6px solid #fff;
+      border-radius:50%;
+      width:60px;height:60px;
+      animation: spin 1s linear infinite;
+      margin-bottom:20px;
+    }
+    @keyframes spin {
+      0% { transform:rotate(0deg);}
+      100% { transform:rotate(360deg);}
+    }
+  </style>
 </head>
 <body>
 
-<header>
+<!-- 🔹 Loading Screen -->
+<div id="loadingScreen">
+  <div class="spinner"></div>
+  Loading assets... <span id="progress">0%</span>
+</div>
+
+<header style="display:none" id="header">
   <button onclick="showTab('roulette')">🎰 Roulette</button>
   <button onclick="showTab('inventory')">🎒 Inventory</button>
   <button onclick="showTab('prizes')">🎁 Prizes</button>
 </header>
 
-<div id="content">
+<div id="content" style="display:none">
   <div class="balance">Balance: <span id="balance">100</span> ⭐</div>
 
   <!-- Roulette -->
@@ -52,6 +91,9 @@ button.sell{padding:4px 8px;margin-left:5px;}
   <div id="prizes" style="display:none;">
     <div class="prizes-grid" id="prizesGrid"></div>
   </div>
+
+  <!-- 🔹 Yandex Ad container -->
+  <div id="yandexAd" style="margin-top:20px;"></div>
 </div>
 
 <script>
@@ -73,11 +115,47 @@ const ITEMS = [
 
 let state={stars:100,inventory:{},spinning:false};
 
-// ✅ Fix: use same key for save/load
+// ✅ Load saved state
 if(localStorage.getItem('gameState1')){
   state=JSON.parse(localStorage.getItem('gameState1'));
 }
 updateBalance();
+
+// -------------------- Preload Assets --------------------
+function preloadImages(images, callback){
+  let loaded=0;
+  images.forEach(src=>{
+    const img=new Image();
+    img.onload=img.onerror=()=>{
+      loaded++;
+      document.getElementById("progress").innerText=Math.floor((loaded/images.length)*100)+"%";
+      if(loaded===images.length) callback();
+    };
+    img.src=src;
+  });
+}
+
+// Start preloading
+window.addEventListener("load", ()=>{
+  const allImages=ITEMS.map(i=>i.img);
+  preloadImages(allImages, ()=>{
+    // Hide loading, show game
+    document.getElementById("loadingScreen").style.display="none";
+    document.getElementById("header").style.display="flex";
+    document.getElementById("content").style.display="block";
+    showTab('roulette');
+
+    // ✅ Render Yandex ads once game is visible
+    window.yaContextCb.push(() => {
+      Ya.Context.AdvManager.render({
+        "blockId": "R-A-17055982-1",
+        "type": "floorAd",
+        "platform": "touch",
+        "renderTo": "yandexAd"
+      })
+    })
+  });
+});
 
 // -------------------- Tabs --------------------
 function showTab(tab){
@@ -133,7 +211,6 @@ function spin(cost){
 
 // -------------------- Inventory --------------------
 function addToInventory(item){
-  // ✅ Fix: give full 2500 stars
   if(item.name==="+2500 Balance"){
     state.stars+=2500;
     updateBalance();
@@ -181,16 +258,6 @@ function renderPrizes(){
     grid.appendChild(div);
   });
 }
-  <!-- Yandex.RTB R-A-17055982-1 -->
-
-window.yaContextCb.push(() => {
-    Ya.Context.AdvManager.render({
-        "blockId": "R-A-17055982-1",
-        "type": "floorAd",
-        "platform": "touch"
-    })
-})
-
 </script>
 </body>
 </html>
