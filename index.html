@@ -2,145 +2,133 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Casino Stars</title>
+  <title>Casino Stars 🎰</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #111;
-      color: white;
-      text-align: center;
+      margin:0;
+      font-family:Arial, sans-serif;
+      background:#111;
+      color:#fff;
+      text-align:center;
     }
     #header {
-      display: none;
-      justify-content: space-between;
-      padding: 10px;
-      background: #222;
-    }
-    #balance {
-      font-size: 20px;
-    }
-    #tabs {
-      margin: 10px 0;
+      background:#222;
+      padding:10px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
     }
     #tabs button {
-      margin: 5px;
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
+      margin:5px;
+      padding:10px 20px;
+      border:none;
+      border-radius:8px;
+      cursor:pointer;
+      background:#444;
+      color:#fff;
     }
-    #content {
-      display: none;
-      padding: 20px;
+    #tabs button.active {
+      background:#f39c12;
     }
-    .tabContent {
-      display: none;
+    #content > div {
+      display:none;
+      padding:20px;
     }
     #loadingScreen {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background: #000;
-      color: #fff;
-      font-size: 24px;
+      position:fixed;
+      top:0;left:0;width:100%;height:100%;
+      background:#000;
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:20px;
+    }
+    #balance {
+      font-size:18px;
+      color:#f1c40f;
     }
     #yandexAd {
-      margin-top: 20px;
+      position:fixed;
+      bottom:0;
+      left:0;
+      width:100%;
+      background:#000;
     }
   </style>
-  <!-- ✅ Yandex Ads -->
-  <script>window.yaContextCb = window.yaContextCb || []</script>
+  <!-- Yandex Ads -->
   <script src="https://yandex.ru/ads/system/context.js" async></script>
 </head>
 <body>
-  <!-- Loading -->
-  <div id="loadingScreen">Loading game assets...</div>
+  <div id="loadingScreen">Loading game assets…</div>
 
-  <!-- Header -->
-  <div id="header">
+  <div id="header" style="display:none;">
     <div>Casino Stars 🎰</div>
     <div id="balance">⭐ 0</div>
   </div>
 
-  <!-- Tabs -->
-  <div id="tabs">
-    <button onclick="showTab('roulette')">Roulette</button>
-    <button onclick="showTab('slots')">Slots</button>
-    <button onclick="showTab('dice')">Dice</button>
+  <div id="tabs" style="display:none;">
+    <button onclick="showTab('roulette')" id="tab-roulette">Roulette</button>
+    <button onclick="showTab('slots')" id="tab-slots">Slots</button>
+    <button onclick="showTab('dice')" id="tab-dice">Dice</button>
   </div>
 
-  <!-- Content -->
-  <div id="content">
-    <div id="roulette" class="tabContent">🎡 Roulette game here</div>
-    <div id="slots" class="tabContent">🎰 Slots game here</div>
-    <div id="dice" class="tabContent">🎲 Dice game here</div>
+  <div id="content" style="display:none;">
+    <div id="roulette">🎡 Roulette game here</div>
+    <div id="slots">🎰 Slot machine game here</div>
+    <div id="dice">🎲 Dice battle here</div>
   </div>
 
-  <!-- Ad Placement -->
   <div id="yandexAd"></div>
 
-  <script>
-    // ✅ Game state
-    const state = {
-      stars: 0
-    };
+<script>
+const state = { stars: 0 };
+function updateBalance(){
+  document.getElementById("balance").textContent = `⭐ ${state.stars}`;
+}
 
-    function updateBalance() {
-      document.getElementById("balance").textContent = "⭐ " + state.stars;
-    }
+function showTab(tab){
+  document.querySelectorAll("#tabs button").forEach(b=>b.classList.remove("active"));
+  document.querySelector(`#tab-${tab}`).classList.add("active");
+  document.querySelectorAll("#content > div").forEach(d=>d.style.display="none");
+  document.getElementById(tab).style.display="block";
+}
 
-    function showTab(id) {
-      document.querySelectorAll(".tabContent").forEach(el => el.style.display = "none");
-      document.getElementById(id).style.display = "block";
-    }
+// Fake preload (1 sec) — replace with your images if needed
+function preloadImages(images, cb){
+  setTimeout(cb, 1000);
+}
 
-    // ✅ Preload mock (replace with real assets later)
-    function preloadImages(images, callback) {
-      let loaded = 0;
-      if (images.length === 0) callback();
-      images.forEach(src => {
-        const img = new Image();
-        img.onload = img.onerror = () => {
-          loaded++;
-          if (loaded === images.length) callback();
-        };
-        img.src = src;
-      });
-    }
+window.addEventListener("load", ()=>{
+  preloadImages([], ()=>{
+    // Hide loading, show game UI
+    document.getElementById("loadingScreen").style.display="none";
+    document.getElementById("header").style.display="flex";
+    document.getElementById("tabs").style.display="block";
+    document.getElementById("content").style.display="block";
+    showTab('roulette');
 
-    const ITEMS = [
-      { img: "https://via.placeholder.com/50" }
-    ];
-
-    // ✅ Start game
-    window.addEventListener("load", () => {
-      const allImages = ITEMS.map(i => i.img);
-      preloadImages(allImages, () => {
-        // Hide loading, show game
-        document.getElementById("loadingScreen").style.display = "none";
-        document.getElementById("header").style.display = "flex";
-        document.getElementById("content").style.display = "block";
-        showTab('roulette');
-
-        // ✅ Render Yandex ads
-        window.yaContextCb.push(() => {
-          Ya.Context.AdvManager.render({
-            "blockId": "R-A-17055982-1", // 🔄 replace with your ad unit
-            "type": "floorAd",
-            "platform": "touch",
-            "renderTo": "yandexAd"
-          });
-        });
-
-        // ⭐ Auto-add 1 star every second
-        setInterval(() => {
-          state.stars++;
-          updateBalance();
-        }, 1000);
-      });
+    // Render Yandex ad
+    window.yaContextCb = window.yaContextCb || [];
+    window.yaContextCb.push(()=>{
+      Ya.Context.AdvManager.render({
+        "blockId": "R-A-17055982-1", // <-- replace with your own blockId
+        "type": "floorAd",
+        "platform": "touch",
+        "renderTo": "yandexAd"
+      })
     });
-  </script>
+
+    // ⭐ Auto-add stars until 20,000
+    setInterval(()=>{
+      if(state.stars < 20000){
+        state.stars++;
+        updateBalance();
+      }
+    }, 1000);
+  });
+});
+</script>
 </body>
 </html>
-
