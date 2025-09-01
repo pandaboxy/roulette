@@ -70,7 +70,7 @@
 </header>
 
 <div id="content" style="display:none">
-  <div class="balance">Balance: <span id="balance">100</span> ⭐</div>
+  <div class="balance">Balance: <span id="balance">10000</span> ⭐</div>
 
   <!-- Roulette -->
   <div id="roulette" style="display:none;">
@@ -113,7 +113,7 @@ const ITEMS = [
   {img:"images/star.png",name:"+2500 Balance",weight:0.1,cost:0}
 ];
 
-let state={stars:100,inventory:{},spinning:false};
+let state={stars:10000,inventory:{},spinning:false};
 
 // ✅ Load saved state
 if(localStorage.getItem('gameState1')){
