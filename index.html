@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Yandex.RTB -->
+<script>window.yaContextCb=window.yaContextCb||[]</script>
+<script src="https://yandex.ru/ads/system/context.js" async></script>
 <meta charset="UTF-8">
 <title>Mini Game Hub</title>
 <style>
@@ -174,9 +177,20 @@ function renderPrizes(){
                    <div>${i.name}</div>
                    <div>Chance: ${i.weight}%</div>
                    <div>Cost: ${i.cost}⭐</div>`;
+   
     grid.appendChild(div);
   });
 }
+  <!-- Yandex.RTB R-A-17055982-1 -->
+
+window.yaContextCb.push(() => {
+    Ya.Context.AdvManager.render({
+        "blockId": "R-A-17055982-1",
+        "type": "floorAd",
+        "platform": "touch"
+    })
+})
+
 </script>
 </body>
 </html>
